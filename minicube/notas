@@ -1,0 +1,50 @@
+//pagina 
+    https://minikube.sigs.k8s.io/docs/start/
+// primero instalarlo
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+Para inciarlo 
+    minikube start
+
+
+
+para ver el dashboard
+    minikube dashboard
+
+para ver el estado 
+    kubectl get nodes
+    kubectl get pods
+    kubectl describe pod <nombre de pod>
+
+para crear un deployment de prueba
+    kubectl create deployment hello-http --image=httpd:latest
+
+para desplegar la aplicacion de prueba  mirar ele archivo
+    kubectl apply -f app.yaml
+para exponer la aplicacion de prueba
+    kubectl expose deployment hello-http --type=LoadBalancer --port=80 --target-port=80
+
+para obtener servicios
+    kubectl get svc
+    kubectl get services
+
+para escalar los pods
+    kubectl scale deployment hello-http --replicas=3
+
+eliminar despliegues 
+    kubectl delete -f app.yaml
+    kubectl delete deployment hello-http
+
+eliminar servicios
+    kubectl delete svc hello-http
+    kubectl delete service hello-http
+
+eliminar el cluster
+minikube delete
+
+ingresar  a algun pod  mirar el archivo 
+    kubectl exec -it mi-appi -c back-end-dos /bin/bash
+
+como exponer un servicio
+    kubectl expose deployment <nombre de service> --port=80 --type=ClusterIP
