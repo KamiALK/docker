@@ -47,4 +47,5 @@ ingresar  a algun pod  mirar el archivo
     kubectl exec -it mi-appi -c back-end-dos /bin/bash
 
 como exponer un servicio
-    kubectl expose deployment <nombre de service> --port=80 --type=ClusterIP
+    kubectl expose deployment hello-http-7447d46bc7-2dhnr --port=80 --type=ClusterIP
+    kubectl expose deployment mi-appi --port=80 --type=ClusterIP
