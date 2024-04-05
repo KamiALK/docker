@@ -1,0 +1,22 @@
+cuando este en la ruta del archivo correr el archivo docker-compose up -d
+luego correr docker ps para comprobar que los contenedores esten activos 
+
+ese comando de  las particiones me da problemas
+
+ojo con eso de localhost porque eso no permite que los contenedores se comuniquen
+
+leer para entender laro, aquí te explico el propósito de cada una de las variables de entorno utilizadas en el entorno de Kafka:
+
+    KAFKA_ADVERTISED_LISTENERS: Esta variable de entorno especifica cómo los clientes pueden conectarse al broker de Kafka. Se utiliza para anunciar las direcciones a las que los clientes deben conectarse para interactuar con Kafka. Puede tener múltiples formatos dependiendo de la configuración de red y del entorno en el que se ejecuta Kafka.
+
+    KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: Esta variable de entorno mapea los nombres de los listeners definidos en KAFKA_ADVERTISED_LISTENERS con los protocolos de seguridad asociados. Permite especificar los protocolos de seguridad (como SSL o SASL) que deben usarse para comunicarse con los diferentes listeners.
+
+    KAFKA_LISTENERS: Esta variable de entorno especifica la lista de listeners que Kafka usará para escuchar las conexiones de los clientes. Cada listener tiene un nombre y una configuración asociada que determina la forma en que se realizará la comunicación.
+
+    KAFKA_INTER_BROKER_LISTENER_NAME: Esta variable de entorno especifica el nombre del listener que Kafka usará para la comunicación interna entre los brokers de Kafka. Es importante configurar este valor correctamente para garantizar una comunicación efectiva entre los brokers.
+
+    KAFKA_ZOOKEEPER_CONNECT: Esta variable de entorno especifica la dirección del servidor ZooKeeper que Kafka usará para la coordinación y el almacenamiento de metadatos. Permite a Kafka conectarse al servicio de ZooKeeper para la gestión del clúster y la coordinación de los brokers.
+
+    KAFKA_BROKER_ID: Esta variable de entorno especifica el ID único del broker de Kafka en el clúster. Cada broker en un clúster de Kafka debe tener un ID único para identificarse ante otros brokers y coordinar las operaciones de replicación y partición.
+
+Estas variables de entorno son fundamentales para configurar y personalizar el entorno de Kafka en función de los requisitos específicos de cada aplicación y del entorno en el que se ejecuta Kafka.
