@@ -1,8 +1,0 @@
-https://www.youtube.com/watch?v=tbbZ5HURHhU&list=WL&index=4
-
-primero descargar k3s de este repo https://github.com/k3s-io/k3s/releases/tag/v1.29.2+k3s1
- y copie el link
-    https://github.com/k3s-io/k3s/releases/download/v1.29.2%2Bk3s1/k3s
-
-voy a simular los servidores con contenedores docker 
-  
