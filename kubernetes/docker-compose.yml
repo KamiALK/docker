@@ -1,0 +1,35 @@
+
+version: '3.8'
+
+services:
+  k3s-server:
+    container_name: k3s-server
+    image: rancher/k3s:latest
+    command:
+      - server
+      - '--disable=traefik'  # Opcional: deshabilitar el controlador Traefik si no lo necesitas
+    volumes:
+      - /etc/resolv.conf:/etc/resolv.conf  # Monta el archivo resolv.conf del host dentro del contenedor
+      - /var/lib/rancher/k3s/agent/containerd:/var/lib/rancher/k3s/agent/containerd  # Monta el directorio del contenedor para ajustar el snapshotter
+    cap_add:
+      - SYS_ADMIN  # Agrega el permiso SYS_ADMIN para permitir el ajuste del snapshotter
+    privileged: true  # Habilita el modo privilegiado para permitir el ajuste del snapshotter
+    networks:
+      - k3s-network
+
+  k3s-worker:
+    container_name: k3s-worker
+    image: rancher/k3s:latest
+    command:
+      - agent
+      - '--server=https://k3s-server:6443'  # Especifica el servidor K3s al que el worker debe unirse
+    volumes:
+      - /etc/resolv.conf:/etc/resolv.conf  # Monta el archivo resolv.conf del host dentro del contenedor
+    depends_on:
+      - k3s-server  # Asegura que el worker se una al servidor una vez que el servidor esté listo
+    networks:
+      - k3s-network
+
+networks:
+  k3s-network:
+    driver: bridge
