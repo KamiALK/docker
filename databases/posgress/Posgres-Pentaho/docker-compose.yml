@@ -1,0 +1,26 @@
+
+version: '3.8'
+
+services:
+  prod:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+      - ./source/dividido:/docker-entrypoint-initdb.d
+      - ./import_data.sh:/import_data.sh
+    networks:
+      - postgresnet
+
+networks:
+  postgresnet:
+    external: true
+
+volumes:
+  postgres-volume:

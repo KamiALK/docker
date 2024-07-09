@@ -1,0 +1,18 @@
+
+version: '3.8'
+
+services:
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver
+    ports:
+      - "8080:8978"
+    volumes:
+      - ./:/opt/cloudbeaver/workspace
+    # entrypoint: /bin/bash -c "/path/to/setup-permissions.sh && /entrypoint.sh"
+    restart: unless-stopped
+    depends_on:
+      - prod
+    networks:
+        - postgresnet
+
