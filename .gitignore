@@ -9,5 +9,10 @@
 **/GlobalConfiguration/
 /pentaho/
 ./pentaho/
+/databases/oracle/.data/
+/databases/oracle/.metadata/
+/databases/oracle/.work-data/
+
+
 
 
