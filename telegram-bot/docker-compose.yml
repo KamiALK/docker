@@ -2,7 +2,7 @@ version: '3.3'
 services:
     docker-controller-bot:
         environment:
-            - TELEGRAM_TOKEN=7440208286:AAGm8ubFbqhlDkHVtGPdjx11B2WmMccdpxI
+            - TELEGRAM_TOKEN=
             - TELEGRAM_ADMIN=5535210598
             - CONTAINER_NAME=docker-controller-bot
             - TZ=America/Bogota

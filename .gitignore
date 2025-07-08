@@ -1,0 +1,13 @@
+
+**/.*/
+/databases/
+**/.data/
+**/.metadata/
+
+**/.new_carpet/
+**/work-data/
+**/GlobalConfiguration/
+/pentaho/
+./pentaho/
+
+
