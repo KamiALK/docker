@@ -1,0 +1,34 @@
+
+version: '3.9'
+# hola mundo
+# como estas 
+
+services:
+  oracle23c:
+    image: oracle/free:23c
+    container_name: oracle23c
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    environment:
+      ORACLE_PWD: 123
+    volumes:
+      - oracle23c_data:/opt/oracle/oradata
+      - ./init-admin.sql:/opt/oracle/scripts/startup/init-admin.sql:ro
+    restart: unless-stopped
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver
+    ports:
+      - "8080:8978"
+    volumes:
+      - ./:/opt/cloudbeaver/workspace
+    # entrypoint: /bin/bash -c "/path/to/setup-permissions.sh && /entrypoint.sh"
+    restart: unless-stopped
+    depends_on:
+      - oracle23c
+
+volumes:
+  oracle23c_data:
+

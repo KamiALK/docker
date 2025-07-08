@@ -1,0 +1,3 @@
+tuve que instalar 
+<pip install xlrd
+para poder hacer funcionar la lectura de excel

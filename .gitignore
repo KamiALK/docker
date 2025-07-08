@@ -1,9 +1,8 @@
 
 **/.*/
-/databases/
 **/.data/
 **/.metadata/
-
+**/new_carpet/carp/data/
 **/.new_carpet/
 **/work-data/
 **/GlobalConfiguration/

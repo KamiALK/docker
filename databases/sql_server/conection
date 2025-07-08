@@ -1,0 +1,9 @@
+
+
+| Campo        | Valor     |
+| ------------ | --------- |
+| host         | sqlserver |
+| port         | 1433      |
+| database     | master    |
+| user         | SA        |
+| password     | KamiSuper#123|

@@ -1,0 +1,5 @@
+pentaho:
+localhost:8090/pentaho
+user: admin
+password: password
+

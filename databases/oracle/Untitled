@@ -1,0 +1,5 @@
+-- hola mundo 
+create table hola_mundo (
+    id integer primary key,
+    mensaje text
+);

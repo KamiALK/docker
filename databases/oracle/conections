@@ -1,0 +1,30 @@
+
+oracle://kamilo:123@localhost:1521/FREEPDB1
+
+
+oracle://admin:admin123@localhost:1521/kamilo_pdb
+
+
+oracle://admin:admin123@localhost:1521/FREEPDB1
+
+
+
+adminnistrador
+
+oracle://myadmin:admin123@127.0.0.1:1521/FREEPDB1
+
+
+--------------------------------------------------------------------------
+dbeaer
+
+opcion services type service
+
+
+| Campo        | Valor     |
+| ------------ | --------- |
+| host         | oracle23c |
+| port         | 1521      |
+| service name | freepdb1  |
+| user         | admin     |
+| password     | admin123  |
+

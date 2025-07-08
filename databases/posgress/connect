@@ -1,0 +1,3 @@
+
+# conectar a db dadabase Adventureworks
+postgresql://postgres:postgres@localhost:5432/Adventureworks
