@@ -9,9 +9,9 @@
 **/GlobalConfiguration/
 /pentaho/
 ./pentaho/
-/databases/oracle/.data/
-/databases/oracle/.metadata/
-/databases/oracle/.work-data/
+# /databases/oracle/.data/
+# /databases/oracle/.metadata/
+# /databases/oracle/.work-data/
 **/docker-images/
 /databases/oracle/docker-images/
 **/AdventureWorks-for-Postgres/
