@@ -9,10 +9,25 @@ services:
       - "8080:8978"
     volumes:
       - ./:/opt/cloudbeaver/workspace
-    # entrypoint: /bin/bash -c "/path/to/setup-permissions.sh && /entrypoint.sh"
     restart: unless-stopped
     depends_on:
       - prod
     networks:
-        - postgresnet
+      - postgresnet
+
+  pentaho:
+    image: unilogica/pentaho-server-ce:9.3.0
+    container_name: pentaho-server
+    ports:
+      - "8090:8080"    # Nota: cambié puerto externo para no chocar con el 8080 del host
+    volumes:
+      - pentaho-data:/opt/pentaho
+    networks:
+      - postgresnet
+
+volumes:
+  pentaho-data:
+
+networks:
+  postgresnet:
 

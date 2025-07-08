@@ -133,3 +133,13 @@ Command-line arguments:  -product io.cloudbeaver.product.ce.product -web-config 
 
 !ENTRY org.eclipse.core.resources 2 10035 2024-08-13 14:24:02.756
 !MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+!SESSION 2025-07-06 15:23:41.425 -----------------------------------------------
+eclipse.buildId=unknown
+java.version=17.0.11
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en
+Framework arguments:  -product io.cloudbeaver.product.ce.product -web-config conf/cloudbeaver.conf -registryMultiLanguage
+Command-line arguments:  -product io.cloudbeaver.product.ce.product -web-config conf/cloudbeaver.conf -registryMultiLanguage
+
+!ENTRY org.eclipse.core.resources 2 10035 2025-07-06 15:23:45.700
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.

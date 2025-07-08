@@ -4,7 +4,7 @@ version: '3.8'
 services:
   prod:
     image: postgres:latest
-    container_name: postgres
+    container_name: postgres_pentaho
     restart: always
     environment:
       POSTGRES_PASSWORD: postgres

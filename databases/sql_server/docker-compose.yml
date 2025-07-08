@@ -6,9 +6,24 @@ services:
     container_name: sqlserver
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=123#Password
+      - MSSQL_SA_PASSWORD=KamiSuper#123
     ports:
       - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver
+    ports:
+      - "8080:8978"
+    volumes:
+      - ./:/opt/cloudbeaver/workspace
+    depends_on:
+      - sqlserver
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
 #     networks:
 #         - netsql
 #
