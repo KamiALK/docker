@@ -1,5 +1,4 @@
-
-version: '3.8'
+version: "3.8"
 services:
   mysql:
     image: mysql:latest
@@ -9,8 +8,8 @@ services:
       MYSQL_DATABASE: SolarInfo
     ports:
       - "0.0.0.0:3306:3306"
-    networks:
-      - mysqlnet
+    # networks:
+    #   - mysqlnet
     volumes:
       - mysql_vol:/var/lib/mysql
 
@@ -29,6 +28,6 @@ services:
 
 volumes:
   mysql_vol:
-
-networks:
-  mysqlnet:
+#
+# networks:
+#   mysqlnet:
