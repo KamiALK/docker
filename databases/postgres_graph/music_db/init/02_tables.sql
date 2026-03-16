@@ -176,3 +176,10 @@ CREATE TABLE song_graph_weights (
 COMMENT ON TABLE song_graph_weights IS 'Pesos de las aristas del grafo musical — sincronizados con Apache AGE';
 COMMENT ON COLUMN song_graph_weights.weight IS 'Valor entre 0 y 1. Más alto = más relacionadas las canciones';
 COMMENT ON COLUMN song_graph_weights.relation_type IS 'Tipo de relación entre las canciones';
+
+
+-- ────────────────────────────────────────────
+-- PERMISOS PARA music_user
+-- ────────────────────────────────────────────
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO music_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO music_user;
