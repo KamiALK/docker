@@ -1,13 +1,14 @@
 version: "3.8"
 services:
   mysql:
-    image: mysql:latest
+    image: mysql:8.0
     container_name: mysql1
     environment:
       MYSQL_ROOT_PASSWORD: kamiloalca
+      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: SolarInfo
     ports:
-      - "0.0.0.0:3306:3306"
+      - "0.0.0.0:3307:3306"
     # networks:
     #   - mysqlnet
     volumes:
