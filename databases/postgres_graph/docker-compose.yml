@@ -1,9 +1,6 @@
-version: '3.8'
 services:
-
-  # Tu postgres original (intacto)
   prod:
-    image: postgres:latest
+    image: postgres:16  # Postgres uses the DB version
     container_name: postgres_pentaho
     restart: always
     environment:
@@ -18,19 +15,20 @@ services:
     networks:
       - postgresnet
 
-  # App de música con AGE
   music_db:
-    image: apache/age:latest
+    # Apache AGE uses release versions like v1.5.0 (which runs on PG16)
+    image: apache/age:release_PG16_1.5.0
     container_name: postgres_music
+    command: ["postgres", "-c", "shared_preload_libraries=age"]
     restart: always
     environment:
       POSTGRES_PASSWORD: music1234
-      POSTGRES_USER: music_user
+      POSTGRES_USER: postgres 
       POSTGRES_DB: music_app
     ports:
       - '5433:5432'
     volumes:
-      - music-volume:/var/lib/postgresql/data
+      - music-volume:/var/lib/postgresql/data # Pointing to /data is safer for persistence
       - ./music_db/init:/docker-entrypoint-initdb.d
     networks:
       - postgresnet
