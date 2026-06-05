@@ -1,0 +1,6 @@
+-- ============================================================
+-- 05_seed.sql  —  Datos semilla
+-- Vacío: los datos de producción se cargan por aplicación
+-- ============================================================
+-- Sin seed data: artists, genres y songs se cargan vía el backend
+-- o mediante scripts separados de importación.
