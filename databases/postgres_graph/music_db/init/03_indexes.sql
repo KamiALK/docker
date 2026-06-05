@@ -1,47 +1,17 @@
 -- ============================================================
--- 03_indexes.sql
--- Índices para optimizar las consultas más frecuentes
+-- 03_indexes.sql  —  Índices del schema public
+-- Generado desde schema_dump real 2026-06-05
 -- ============================================================
-
--- USERS
-CREATE INDEX idx_users_role         ON users(role);
-CREATE INDEX idx_users_is_active    ON users(is_active);
-
--- ACCESS CODES
-CREATE INDEX idx_access_codes_admin    ON access_codes(admin_id);
-CREATE INDEX idx_access_codes_user     ON access_codes(user_id);
-CREATE INDEX idx_access_codes_used     ON access_codes(used);
-CREATE INDEX idx_access_codes_code     ON access_codes(code);
-
--- SONGS
-CREATE INDEX idx_songs_genre        ON songs(genre);
-CREATE INDEX idx_songs_artist       ON songs(artist);
-CREATE INDEX idx_songs_is_blocked   ON songs(is_blocked);
-CREATE INDEX idx_songs_youtube_id   ON songs(youtube_id);
-
--- SONG REQUESTS
-CREATE INDEX idx_requests_user      ON song_requests(user_id);
-CREATE INDEX idx_requests_song      ON song_requests(song_id);
-CREATE INDEX idx_requests_status    ON song_requests(status);
-CREATE INDEX idx_requests_date      ON song_requests(requested_at DESC);
-
--- LIKES
-CREATE INDEX idx_likes_user         ON likes(user_id);
-CREATE INDEX idx_likes_song         ON likes(song_id);
-CREATE INDEX idx_likes_request      ON likes(request_id);
-CREATE INDEX idx_likes_type         ON likes(like_type);
-
--- PLAY QUEUE
-CREATE INDEX idx_queue_status       ON play_queue(status);
-CREATE INDEX idx_queue_position     ON play_queue(position);
-CREATE INDEX idx_queue_song         ON play_queue(song_id);
-
--- PLAY HISTORY
-CREATE INDEX idx_history_song       ON play_history(song_id);
-CREATE INDEX idx_history_played_at  ON play_history(played_at DESC);
-
--- GRAPH WEIGHTS
-CREATE INDEX idx_weights_song_a     ON song_graph_weights(song_a_id);
-CREATE INDEX idx_weights_song_b     ON song_graph_weights(song_b_id);
-CREATE INDEX idx_weights_type       ON song_graph_weights(relation_type);
-CREATE INDEX idx_weights_weight     ON song_graph_weights(weight DESC);
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id               ON public.users(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_users_username                ON public.users(username);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id         ON public.user_profiles(user_id);
+CREATE INDEX IF NOT EXISTS ix_songs_artist_id                ON public.songs(artist_id);
+CREATE INDEX IF NOT EXISTS ix_songs_genre_id                 ON public.songs(genre_id);
+CREATE INDEX IF NOT EXISTS ix_song_requests_song_id          ON public.song_requests(song_id);
+CREATE INDEX IF NOT EXISTS ix_song_requests_night_session_id ON public.song_requests(night_session_id);
+CREATE INDEX IF NOT EXISTS ix_play_histories_song_id         ON public.play_histories(song_id);
+CREATE INDEX IF NOT EXISTS ix_play_histories_night_session_id ON public.play_histories(night_session_id);
+CREATE INDEX IF NOT EXISTS ix_play_histories_previous_song_id ON public.play_histories(previous_song_id);
+CREATE INDEX IF NOT EXISTS ix_song_recommendations_source    ON public.song_recommendations(source_song_id);
+CREATE INDEX IF NOT EXISTS session_users_night_session_idx   ON public.session_users(night_session_id);
+CREATE INDEX IF NOT EXISTS session_users_left_at_idx         ON public.session_users(left_at);

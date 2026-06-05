@@ -1,18 +1,22 @@
 -- ============================================================
--- 04_age_graph.sql
+-- 04_age_graph.sql  —  Grafos AGE
+-- Generado desde schema_dump real 2026-06-05
 -- ============================================================
-
 LOAD 'age';
 SET search_path = ag_catalog, "$user", public;
 
-SELECT create_vlabel('music_graph', 'Song');
-SELECT create_vlabel('music_graph', 'Artist');
-SELECT create_vlabel('music_graph', 'Genre');
-SELECT create_vlabel('music_graph', 'User');
+SELECT CASE
+    WHEN NOT EXISTS (SELECT 1 FROM ag_catalog.ag_graph WHERE name = 'music_global')
+    THEN create_graph('music_global')
+END;
 
-SELECT create_elabel('music_graph', 'SOUNDS_LIKE');
-SELECT create_elabel('music_graph', 'BY_ARTIST');
-SELECT create_elabel('music_graph', 'IN_GENRE');
-SELECT create_elabel('music_graph', 'REQUESTED');
-SELECT create_elabel('music_graph', 'LIKED');
-SELECT create_elabel('music_graph', 'SIMILAR_TASTE');
+CREATE OR REPLACE FUNCTION public.create_tenant_graph(p_tenant_id uuid) RETURNS void
+    LANGUAGE plpgsql AS $_$
+DECLARE
+    graph_name text := 'age_' || replace(p_tenant_id::text, '-', '');
+BEGIN
+    LOAD 'age';
+    SET search_path = ag_catalog, "$user", public;
+    PERFORM create_graph(graph_name);
+END;
+$_$;

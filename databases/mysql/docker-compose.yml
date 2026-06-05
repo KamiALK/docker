@@ -1,34 +1,31 @@
 version: "3.8"
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql1
-    environment:
-      MYSQL_ROOT_PASSWORD: kamiloalca
-      MYSQL_ROOT_HOST: '%'
-      MYSQL_DATABASE: SolarInfo
-    ports:
-      - "0.0.0.0:3307:3306"
-    # networks:
-    #   - mysqlnet
-    volumes:
-      - mysql_vol:/var/lib/mysql
-
-  # cloudbeaver:
-  #   image: dbeaver/cloudbeaver:latest
-  #   container_name: beaver1
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: mysql2
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: kamiloalca
+  #     MYSQL_ROOT_HOST: '%'
+  #     MYSQL_DATABASE: SolarInfo
   #   ports:
-  #     - "8080:8978"
+  #     - "0.0.0.0:3307:3306"
+  #   # networks:
+  #   #   - mysqlnet
   #   volumes:
-  #     - ./:/opt/cloudbeaver/workspace
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - mysql
-  #   networks:
-  #     - mysqlnet
+  #     - mysql_vol:/var/lib/mysql
+  #
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: beaver1
+    ports:
+      - "8080:8978"
+    volumes:
+      - ./:/opt/cloudbeaver/workspace
+    restart: unless-stopped
+    networks:
+      - mobel
 
-volumes:
-  mysql_vol:
-#
-# networks:
+networks:
+  mobel:
+    external:   true
 #   mysqlnet:
