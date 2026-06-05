@@ -1,9 +1,13 @@
 -- ============================================================
 -- 02_tables.sql  —  Schema público + función create_tenant_schema
--- Generado desde schema_dump real 2026-06-05
+-- Idempotente: seguro de correr múltiples veces
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ────────────────────────────────────────────
+-- SCHEMA PUBLIC
+-- ────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS public.platform_admins (
     id            UUID          PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -169,17 +173,28 @@ CREATE TABLE IF NOT EXISTS public.tenant_settings (
     auto_approve           BOOLEAN     NOT NULL DEFAULT false
 );
 
+-- ────────────────────────────────────────────
+-- FUNCIÓN: create_tenant_schema
+-- Guard: si el schema ya existe, no hace nada (idempotente)
+-- ────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.create_tenant_schema(tenant_id uuid) RETURNS void
     LANGUAGE plpgsql AS $func$
 DECLARE
     s TEXT := 'tenant_' || replace(tenant_id::text, '-', '');
 BEGIN
-    EXECUTE 'CREATE SCHEMA IF NOT EXISTS ' || quote_ident(s);
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.users (
+    -- IDEMPOTENCIA: si el schema ya existe, salir sin hacer nada
+    IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = s) THEN
+        RETURN;
+    END IF;
+
+    EXECUTE 'CREATE SCHEMA ' || quote_ident(s);
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.users (
         id               UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
         username         VARCHAR(50) NOT NULL,
         email            VARCHAR(100),
-        role             VARCHAR(20) NOT NULL DEFAULT ''client'' CHECK (role IN (''client'', ''admin'')),
+        role             VARCHAR(20) NOT NULL DEFAULT ''client''
+                                     CHECK (role IN (''client'', ''admin'')),
         is_anonymous     BOOLEAN     NOT NULL DEFAULT false,
         location_enabled BOOLEAN     NOT NULL DEFAULT false,
         is_active        BOOLEAN     NOT NULL DEFAULT true,
@@ -187,7 +202,8 @@ BEGIN
         created_at       TIMESTAMP   NOT NULL DEFAULT NOW(),
         updated_at       TIMESTAMP   NOT NULL DEFAULT NOW()
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.user_credits (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.user_credits (
         id                UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id           UUID      NOT NULL REFERENCES ' || quote_ident(s) || '.users(id) ON DELETE CASCADE,
         credits_available INT       NOT NULL DEFAULT 0 CHECK (credits_available >= 0),
@@ -195,7 +211,8 @@ BEGIN
         updated_at        TIMESTAMP NOT NULL DEFAULT NOW(),
         CONSTRAINT ' || quote_ident('uq_' || s || '_user_credits') || ' UNIQUE (user_id)
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.access_codes (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.access_codes (
         id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
         code       VARCHAR(20) NOT NULL UNIQUE,
         admin_id   UUID        NOT NULL REFERENCES ' || quote_ident(s) || '.users(id),
@@ -206,7 +223,8 @@ BEGIN
         created_at TIMESTAMP   NOT NULL DEFAULT NOW(),
         used_at    TIMESTAMP
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.tenant_songs (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.tenant_songs (
         id         UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
         song_id    UUID      NOT NULL REFERENCES public.songs(id),
         is_enabled BOOLEAN   NOT NULL DEFAULT true,
@@ -216,23 +234,29 @@ BEGIN
         added_at   TIMESTAMP NOT NULL DEFAULT NOW(),
         CONSTRAINT ' || quote_ident('uq_' || s || '_song') || ' UNIQUE (song_id)
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.night_sessions (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.night_sessions (
         id                UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
         opened_at         TIMESTAMP   NOT NULL DEFAULT NOW(),
         closed_at         TIMESTAMP,
-        operation_mode    VARCHAR(20) NOT NULL DEFAULT ''bootstrap'' CHECK (operation_mode IN (''playlist'', ''bootstrap'', ''smart'', ''audience'')),
-        hero_villain_mode VARCHAR(20) NOT NULL DEFAULT ''hero'' CHECK (hero_villain_mode IN (''hero'', ''villain''))
+        operation_mode    VARCHAR(20) NOT NULL DEFAULT ''bootstrap''
+                                      CHECK (operation_mode IN (''playlist'', ''bootstrap'', ''smart'', ''audience'')),
+        hero_villain_mode VARCHAR(20) NOT NULL DEFAULT ''hero''
+                                      CHECK (hero_villain_mode IN (''hero'', ''villain''))
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.song_requests (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.song_requests (
         id               UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id          UUID        NOT NULL REFERENCES ' || quote_ident(s) || '.users(id),
         song_id          UUID        NOT NULL REFERENCES public.songs(id),
         likes_count      INT         NOT NULL DEFAULT 0,
-        status           VARCHAR(20) NOT NULL DEFAULT ''pending'' CHECK (status IN (''pending'', ''queued'', ''playing'', ''played'', ''skipped'')),
+        status           VARCHAR(20) NOT NULL DEFAULT ''pending''
+                                     CHECK (status IN (''pending'', ''queued'', ''playing'', ''played'', ''skipped'')),
         requested_at     TIMESTAMP   NOT NULL DEFAULT NOW(),
         night_session_id UUID        NOT NULL DEFAULT ''00000000-0000-0000-0000-000000000000''::uuid
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.likes (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.likes (
         id         UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
         user_id    UUID        NOT NULL REFERENCES ' || quote_ident(s) || '.users(id),
         song_id    UUID        REFERENCES public.songs(id),
@@ -241,19 +265,22 @@ BEGIN
         created_at TIMESTAMP   NOT NULL DEFAULT NOW(),
         CONSTRAINT ' || quote_ident('uq_' || s || '_like_song') || ' UNIQUE (user_id, song_id, like_type)
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.play_queue (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.play_queue (
         id            UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
         song_id       UUID        NOT NULL REFERENCES public.songs(id),
         request_id    UUID        REFERENCES ' || quote_ident(s) || '.song_requests(id),
         position      INT         NOT NULL,
         is_transition BOOLEAN     NOT NULL DEFAULT false,
-        status        VARCHAR(20) NOT NULL DEFAULT ''waiting'' CHECK (status IN (''waiting'', ''playing'', ''played'', ''removed'')),
+        status        VARCHAR(20) NOT NULL DEFAULT ''waiting''
+                                  CHECK (status IN (''waiting'', ''playing'', ''played'', ''removed'')),
         added_at      TIMESTAMP   NOT NULL DEFAULT NOW(),
         played_at     TIMESTAMP,
         priority      INT         NOT NULL DEFAULT 3,
         source        VARCHAR(20) NOT NULL DEFAULT ''graph''
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.play_history (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.play_history (
         id               UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
         song_id          UUID      NOT NULL REFERENCES public.songs(id),
         request_id       UUID      REFERENCES ' || quote_ident(s) || '.song_requests(id),
@@ -261,22 +288,28 @@ BEGIN
         duration_seconds INT,
         was_skipped      BOOLEAN   NOT NULL DEFAULT false
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.song_graph_weights (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.song_graph_weights (
         id            UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
         song_a_id     UUID         NOT NULL REFERENCES public.songs(id),
         song_b_id     UUID         NOT NULL REFERENCES public.songs(id),
-        weight        DECIMAL(5,4) NOT NULL DEFAULT 0.5 CHECK (weight >= 0 AND weight <= 1),
-        relation_type VARCHAR(30)  NOT NULL CHECK (relation_type IN (''similar_sound'', ''same_artist'', ''same_genre'', ''same_mood'', ''user_behavior'')),
+        weight        DECIMAL(5,4) NOT NULL DEFAULT 0.5
+                                   CHECK (weight >= 0 AND weight <= 1),
+        relation_type VARCHAR(30)  NOT NULL CHECK (relation_type IN (
+                                   ''similar_sound'', ''same_artist'', ''same_genre'',
+                                   ''same_mood'', ''user_behavior'')),
         updated_at    TIMESTAMP    NOT NULL DEFAULT NOW(),
         CONSTRAINT ' || quote_ident('uq_' || s || '_song_pair') || ' UNIQUE (song_a_id, song_b_id, relation_type),
         CONSTRAINT ' || quote_ident('chk_' || s || '_no_self_loop') || ' CHECK (song_a_id <> song_b_id)
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.tenant_settings (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.tenant_settings (
         id                     UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
         auto_transition        BOOLEAN     NOT NULL DEFAULT true,
         transition_on_empty    BOOLEAN     NOT NULL DEFAULT true,
         transition_count       INT         NOT NULL DEFAULT 1 CHECK (transition_count IN (1, 2)),
-        transition_mode        VARCHAR(30) NOT NULL DEFAULT ''mood'' CHECK (transition_mode IN (''mood'', ''genre'', ''bpm'', ''mixed'')),
+        transition_mode        VARCHAR(30) NOT NULL DEFAULT ''mood''
+                                           CHECK (transition_mode IN (''mood'', ''genre'', ''bpm'', ''mixed'')),
         queue_visible_count    INT         NOT NULL DEFAULT 5,
         max_song_repeat_night  INT         NOT NULL DEFAULT 1,
         updated_at             TIMESTAMP   NOT NULL DEFAULT NOW(),
@@ -289,7 +322,8 @@ BEGIN
         tenant_id              UUID,
         auto_approve           BOOLEAN     NOT NULL DEFAULT false
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.tenant_youtube_credentials (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.tenant_youtube_credentials (
         id         UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
         api_key    VARCHAR(200) NOT NULL,
         client_id  VARCHAR(200),
@@ -297,7 +331,8 @@ BEGIN
         created_at TIMESTAMP    NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMP    NOT NULL DEFAULT NOW()
     )';
-    EXECUTE 'CREATE TABLE IF NOT EXISTS ' || quote_ident(s) || '.session_users (
+
+    EXECUTE 'CREATE TABLE ' || quote_ident(s) || '.session_users (
         id               UUID      PRIMARY KEY DEFAULT uuid_generate_v4(),
         night_session_id UUID      NOT NULL REFERENCES ' || quote_ident(s) || '.night_sessions(id) ON DELETE CASCADE,
         user_id          UUID      NOT NULL REFERENCES ' || quote_ident(s) || '.users(id) ON DELETE CASCADE,
@@ -305,27 +340,29 @@ BEGIN
         left_at          TIMESTAMP,
         CONSTRAINT ' || quote_ident('uq_' || s || '_session_user') || ' UNIQUE (night_session_id, user_id)
     )';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.users(role)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.users(is_active)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.tenant_songs(song_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.tenant_songs(is_blocked)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_requests(user_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_requests(song_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_requests(status)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_requests(requested_at DESC)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.likes(user_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.likes(song_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.play_queue(status)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.play_queue(position)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.play_history(song_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.play_history(played_at DESC)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_graph_weights(song_a_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_graph_weights(song_b_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_graph_weights(relation_type)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.song_graph_weights(weight DESC)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.night_sessions(opened_at DESC)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.night_sessions(closed_at)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.session_users(night_session_id)';
-    EXECUTE 'CREATE INDEX IF NOT EXISTS ON ' || quote_ident(s) || '.session_users(left_at)';
+
+    -- ÍNDICES
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.users(role)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.users(is_active)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.tenant_songs(song_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.tenant_songs(is_blocked)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_requests(user_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_requests(song_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_requests(status)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_requests(requested_at DESC)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.likes(user_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.likes(song_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.play_queue(status)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.play_queue(position)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.play_history(song_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.play_history(played_at DESC)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_graph_weights(song_a_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_graph_weights(song_b_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_graph_weights(relation_type)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.song_graph_weights(weight DESC)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.night_sessions(opened_at DESC)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.night_sessions(closed_at)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.session_users(night_session_id)';
+    EXECUTE 'CREATE INDEX ON ' || quote_ident(s) || '.session_users(left_at)';
 END;
 $func$;
